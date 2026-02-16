@@ -21,7 +21,11 @@ app.post("/execute", async (req, res) => {
     })
   }
 
-  const job = await codeQueue.add('execute', { code: codeString });
+  const job = await codeQueue.add('execute', { code: codeString }, {
+    removeOnComplete: {
+      age: 3600
+    }
+  });
 
   return res.status(200).json({
     jobId: job.id,
