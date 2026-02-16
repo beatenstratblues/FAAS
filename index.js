@@ -1,5 +1,6 @@
 const { spawn } = require('child_process');
-const express = require('express')
+const express = require('express');
+const { codeQueue } = require('./queue');
 const app = express()
 const port = 3000
 
@@ -11,10 +12,20 @@ app.get('/', (req, res) => {
   })
 })
 
-app.post("/execute", (req, res) => {
+app.post("/execute", async (req, res) => {
   const codeString = req.body.codeString;
-  res.status(200).json({
-    message: codeString
+
+  if (!codeString) {
+    return res.status(400).json({
+      error: "Code is required!"
+    })
+  }
+
+  const job = await codeQueue.add('execute', { code: codeString });
+
+  return res.status(200).json({
+    jobId: job.id,
+    status: "queued"
   })
 })
 
