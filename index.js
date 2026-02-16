@@ -1,0 +1,19 @@
+const express = require('express')
+const app = express()
+const port = 3000
+
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'The server is running successfully'
+  })
+})
+
+app.post("/execute", (req, res) => {
+  res.status(200).json({
+    message: 'The server is running successfully'
+  })
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
