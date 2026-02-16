@@ -6,39 +6,50 @@ const path = require('path');
 const os = require('os');
 
 const worker = new Worker(
-  'codeJobQueue',
-  async job => {
+    'codeJobQueue',
+    async job => {
 
-    const tempFile = path.join(os.tmpdir(), `code-${Date.now()}.js`);
-    fs.writeFileSync(tempFile, job.data.code);
+        const tempFile = path.join(os.tmpdir(), `code-${Date.now()}.js`);
+        fs.writeFileSync(tempFile, job.data.code);
 
-    return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
 
-      const child = spawn(process.execPath, [tempFile]);
+            const child = spawn('docker', [
+                'run',
+                '--rm',
+                '--memory=128m',
+                '--cpus=0.5',
+                '--network=none',
+                '-v',
+                `${tempFile}:/app/code.js`,
+                'node:18',
+                'node',
+                '/app/code.js'
+            ]);
 
-      let output = '';
-      let errorOutput = '';
+            let output = '';
+            let errorOutput = '';
 
-      child.stdout.on('data', data => {
-        output += data.toString();
-      });
+            child.stdout.on('data', data => {
+                output += data.toString();
+            });
 
-      child.stderr.on('data', data => {
-        errorOutput += data.toString();
-      });
+            child.stderr.on('data', data => {
+                errorOutput += data.toString();
+            });
 
-      child.on('close', code => {
-        fs.unlinkSync(tempFile);
+            child.on('close', code => {
+                fs.unlinkSync(tempFile);
 
-        if (code === 0) {
-          resolve({ output });
-        } else {
-          reject(new Error(errorOutput));
-        }
-      });
-    });
-  },
-  { connection }
+                if (code === 0) {
+                    resolve({ output });
+                } else {
+                    reject(new Error(errorOutput));
+                }
+            });
+        });
+    },
+    { connection }
 );
 
 worker.on('completed', (job, output) => {
