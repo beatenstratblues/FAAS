@@ -1,0 +1,22 @@
+services:
+  postgress:
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=faas
+    volumes:
+      - postgres_data:/var/lib/postgresql
+  redis:
+    image: redis:8.6.0
+    ports:
+      - "6379:6379"
+  api-server:
+    build: ./api
+    ports:
+    - "3000:3000"
+  worker:
+    build: ./worker
+volumes:
+    postgres_data:
