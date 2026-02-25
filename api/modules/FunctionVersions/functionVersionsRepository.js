@@ -1,4 +1,4 @@
-const db = require('../db/knex');
+const db = require('../infrastructure/db/knex');
 
 const FunctionVersionsRepository = {
 };
